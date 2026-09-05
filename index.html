@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f7eee8" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="My Books" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <title>My Books</title>
+  <style>
+    :root {
+      --bg:#f7eee8; --card:#fffaf6; --ink:#3d2c2b; --muted:#8e7774;
+      --rose:#b35d7b; --rose2:#d9a9b8; --sage:#cfd6b7; --lav:#d9d0e8;
+      --sand:#ead8c8; --line:#eaded7; --shadow:0 10px 28px rgba(70,45,45,.08);
+      --radius:24px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#f9f1eb 0%,#f4e8e0 100%);color:var(--ink);font-family:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;}
+    button,input,textarea,select{font:inherit}
+    .app{max-width:520px;margin:0 auto;min-height:100vh;background:rgba(255,250,246,.55);position:relative;padding-bottom:94px}
+    .screen{display:none;padding:24px 18px 110px}.screen.active{display:block}
+    h1,h2,h3{font-family:Georgia, 'Times New Roman', serif;font-weight:500;margin:0}
+    h1{font-size:42px;letter-spacing:-1px} h2{font-size:31px} h3{font-size:22px}
+    .tagline{font-family:Georgia,serif;font-style:italic;color:#a56d78;margin-top:6px;font-size:16px}
+    .hero{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+    .sparkle{font-size:30px;color:#c8879d}
+    .stat-card{background:linear-gradient(135deg,#fff8f1,#f7e8e2);border:1px solid var(--line);border-radius:22px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;box-shadow:var(--shadow);margin:18px 0}
+    .big-num{font-size:40px;font-family:Georgia,serif}.small{font-size:12px;color:var(--muted)}
+    .books-ill{font-size:48px}
+    .chips{display:flex;gap:8px;overflow:auto;padding-bottom:4px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+    .chip{border:1px solid var(--line);background:#fff7f1;padding:10px 14px;border-radius:999px;color:var(--ink);white-space:nowrap}.chip.active{background:var(--rose);color:#fff;border-color:var(--rose)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 12px;margin-top:16px}.book-card{background:transparent;border:0;padding:0;text-align:left;color:inherit}
+    .cover{aspect-ratio:2/3;border-radius:12px;overflow:hidden;background:#eadfd7;box-shadow:0 8px 18px rgba(70,45,45,.14);display:flex;align-items:center;justify-content:center}.cover img{width:100%;height:100%;object-fit:cover}.cover-placeholder{font-size:34px}
+    .book-title{font-size:12px;font-weight:700;margin-top:7px;line-height:1.15}.stars{font-size:12px;color:#b35d7b;letter-spacing:1px;margin-top:3px}
+    .bottom-nav{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(520px,100%);background:rgba(255,250,246,.96);backdrop-filter:blur(16px);border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr 1fr 1fr;padding:8px 12px calc(8px + env(safe-area-inset-bottom));z-index:20}
+    .nav-btn{border:0;background:none;color:#6f5e5a;padding:4px 2px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:4px}.nav-btn span:first-child{font-size:22px}.nav-btn.active{color:var(--rose)}
+    .add-fab{width:52px;height:52px;border-radius:50%;border:0;background:var(--rose);color:#fff;font-size:30px;box-shadow:0 8px 18px rgba(179,93,123,.35);margin-top:-21px}
+    .search{width:100%;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:#fff8f3;margin:14px 0}
+    .filter-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.filter{border:0;border-radius:16px;padding:14px;text-align:left;background:#efe7df}.filter:nth-child(3n+1){background:#e3e5cf}.filter:nth-child(3n+2){background:#f1d9df}.filter:nth-child(3n){background:#ded7eb}
+    .section-title{display:flex;align-items:center;justify-content:space-between;margin-top:20px}.section-title a{font-size:12px;color:var(--muted)}
+    .form-card{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:16px;box-shadow:var(--shadow);margin-top:14px}
+    label{display:block;font-size:12px;color:#695552;margin:13px 0 6px}.field, textarea, select{width:100%;border:1px solid var(--line);background:#fffaf6;border-radius:14px;padding:13px;color:var(--ink)} textarea{min-height:94px;resize:vertical}
+    .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.seg button{border:1px solid var(--line);background:#fff7f1;border-radius:14px;padding:11px 8px}.seg button.active{background:var(--rose);color:#fff;border-color:var(--rose)}
+    .primary{width:100%;border:0;border-radius:16px;padding:15px;background:var(--rose);color:white;font-weight:700;margin-top:16px}.secondary{width:100%;border:1px solid var(--rose2);border-radius:16px;padding:13px;background:#fff6f2;color:var(--rose);font-weight:700;margin-top:10px}
+    .photo-box{aspect-ratio:4/3;border:1.5px dashed #d8c5ba;border-radius:20px;background:#fdf5ef;display:flex;align-items:center;justify-content:center;overflow:hidden}.photo-box img{width:100%;height:100%;object-fit:contain;background:#efe7e1}.photo-placeholder{text-align:center;color:var(--muted);padding:20px}.photo-placeholder b{display:block;color:var(--ink);font-family:Georgia,serif;font-size:22px;margin-bottom:6px}
+    .row{display:flex;gap:10px}.row>*{flex:1}.back{border:0;background:none;font-size:28px;color:var(--ink);padding:0 8px 0 0}.detail-head{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:start;margin-top:18px}.detail-cover{aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:#eadfd7;box-shadow:var(--shadow)}.detail-cover img{width:100%;height:100%;object-fit:cover}.muted{color:var(--muted)}
+    .rating-input{display:flex;gap:7px;font-size:32px}.rating-input button{border:0;background:none;padding:0;color:#d9c2c7}.rating-input button.on{color:#b35d7b}
+    .pill{display:inline-block;background:#f3dce2;color:#9c4b67;border-radius:999px;padding:8px 12px;font-size:12px;margin:4px 6px 0 0}.detail-actions{display:flex;gap:10px;margin-top:18px}.detail-actions button{flex:1;border:0;border-radius:14px;padding:12px}.danger{background:#f4e6e2;color:#a04e4e}.edit{background:#eadce3;color:#8e4862}
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.mini-stat{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}.mini-stat .n{font-family:Georgia,serif;font-size:34px;margin-top:8px}
+    .empty{padding:36px 14px;text-align:center;color:var(--muted)}
+    .hidden{display:none!important}
+    @media (max-width:380px){h1{font-size:36px}.grid{gap:12px 9px}.book-title{font-size:11px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <main>
+    <section id="books" class="screen active">
+      <div class="hero"><div><h1>My books</h1><div class="tagline">Every page is a new adventure ♥</div></div><div class="sparkle">✦</div></div>
+      <div class="stat-card"><div><div id="booksReadCount" class="big-num">0</div><div class="small">Books read this year</div></div><div class="books-ill">📚</div></div>
+      <div class="chips" id="statusChips">
+        <button class="chip active" data-filter="all">All</button><button class="chip" data-filter="read">Read</button><button class="chip" data-filter="want">Want to read</button><button class="chip" data-filter="favorite">Favorites</button>
+      </div>
+      <div id="bookGrid" class="grid"></div>
+      <div id="emptyBooks" class="empty hidden">No books here yet. Add the first one ✨</div>
+    </section>
+
+    <section id="explore" class="screen">
+      <div class="hero"><div><h2>Explore</h2></div><div class="sparkle">✦</div></div>
+      <input id="searchInput" class="search" placeholder="Search books, authors, genres..." />
+      <div class="section-title"><h3>Browse by</h3></div>
+      <div class="filter-grid" id="exploreFilters"></div>
+      <div class="section-title"><h3>Results</h3><a id="clearExplore">Clear</a></div>
+      <div id="exploreGrid" class="grid"></div>
+    </section>
+
+    <section id="add" class="screen">
+      <div style="display:flex;align-items:center;gap:8px"><button class="back" onclick="showScreen('books')">‹</button><h2 id="addHeading">Add a book</h2></div>
+      <div class="form-card">
+        <div class="photo-box" id="photoBox"><div class="photo-placeholder"><b>Take a photo of the cover ✨</b>We’ll try to find the title and author for you.</div></div>
+        <input id="photoInput" type="file" accept="image/*" capture="environment" class="hidden" />
+        <button class="primary" id="photoBtn">📷 Take or choose photo</button>
+        <button class="secondary" id="ocrBtn">✨ Read title & author from cover</button>
+        <div class="small" style="margin-top:8px">Auto-reading uses OCR in your browser and may need an internet connection the first time.</div>
+      </div>
+      <div class="form-card">
+        <label>Title</label><input id="titleInput" class="field" placeholder="Book title" />
+        <label>Author</label><input id="authorInput" class="field" placeholder="Author" />
+        <label>Status</label><div class="seg" id="statusSeg"><button data-status="want" class="active">Want to read</button><button data-status="reading">Reading</button><button data-status="read">Read</button></div>
+        <div class="row"><div><label>Genre</label><select id="genreInput"><option>Fantasy</option><option>Romance</option><option>Mystery</option><option>Adventure</option><option>Contemporary</option><option>Historical</option><option>Science fiction</option><option>Biography</option><option>Other</option></select></div><div><label>Mood</label><select id="moodInput"><option>Cozy</option><option>Exciting</option><option>Funny</option><option>Romantic</option><option>Sad</option><option>Scary</option><option>Adventurous</option></select></div></div>
+        <label>Rating</label><div class="rating-input" id="ratingInput"></div>
+        <label><input id="favoriteInput" type="checkbox" /> ♥ Favorite</label>
+        <label>Date finished</label><input id="dateInput" type="date" class="field" />
+        <label>What it’s about</label><textarea id="summaryInput" placeholder="A short summary..."></textarea>
+        <label>What I thought</label><textarea id="thoughtsInput" placeholder="My opinion..."></textarea>
+        <button class="primary" id="saveBtn">Save book</button>
+      </div>
+    </section>
+
+    <section id="detail" class="screen">
+      <div style="display:flex;align-items:center;gap:8px"><button class="back" onclick="showScreen('books')">‹</button><h2>Book details</h2></div>
+      <div id="detailContent"></div>
+    </section>
+
+    <section id="stats" class="screen">
+      <div class="hero"><div><h2>My reading</h2><div class="tagline">A little story of your stories ✨</div></div></div>
+      <div class="stats-grid">
+        <div class="mini-stat"><div class="small">Books read this year</div><div id="statRead" class="n">0</div></div>
+        <div class="mini-stat"><div class="small">Average rating</div><div id="statAvg" class="n">–</div></div>
+        <div class="mini-stat"><div class="small">Most read genre</div><div id="statGenre" class="n" style="font-size:25px">–</div></div>
+        <div class="mini-stat"><div class="small">5-star books</div><div id="statFive" class="n">0</div></div>
+      </div>
+      <div class="section-title"><h3>My top rated books</h3></div>
+      <div id="topGrid" class="grid"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-screen="books"><span>▥</span><span>Books</span></button>
+    <button class="nav-btn" data-screen="explore"><span>⌕</span><span>Explore</span></button>
+    <button class="nav-btn" data-screen="add"><span class="add-fab" style="display:grid;place-items:center">+</span><span>Add</span></button>
+    <button class="nav-btn" data-screen="stats"><span>♙</span><span>My Reading</span></button>
+  </nav>
+</div>
+
+<script>
+const KEY='bookish-books-v1';
+let books=JSON.parse(localStorage.getItem(KEY)||'[]');
+let editingId=null, currentRating=0, currentStatus='want', currentCover='';
+let homeFilter='all', exploreFilter='';
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+function save(){localStorage.setItem(KEY,JSON.stringify(books)); renderAll();}
+function esc(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+function stars(n){return '★★★★★'.split('').map((s,i)=>i<n?'★':'☆').join('');}
+function showScreen(id){$$('.screen').forEach(s=>s.classList.toggle('active',s.id===id));$$('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.screen===id)); if(id==='add'&&!editingId) resetForm(); if(id==='stats') renderStats(); window.scrollTo(0,0);}
+$$('.nav-btn').forEach(b=>b.addEventListener('click',()=>{ if(b.dataset.screen==='add'){editingId=null;resetForm();} showScreen(b.dataset.screen)}));
+
+function filteredHome(){return books.filter(b=>homeFilter==='all'||(homeFilter==='favorite'&&b.favorite)||b.status===homeFilter)}
+function bookCard(b){return `<button class="book-card" onclick="openDetail('${b.id}')"><div class="cover">${b.cover?`<img src="${b.cover}">`:`<div class="cover-placeholder">📖</div>`}</div><div class="book-title">${esc(b.title||'Untitled')}</div><div class="stars">${b.rating?stars(b.rating):'☆☆☆☆☆'}</div></button>`}
+function renderBooks(){const list=filteredHome();$('#bookGrid').innerHTML=list.map(bookCard).join('');$('#emptyBooks').classList.toggle('hidden',list.length>0); const year=new Date().getFullYear(); $('#booksReadCount').textContent=books.filter(b=>b.status==='read'&&b.finishedDate&&new Date(b.finishedDate).getFullYear()===year).length;}
+$('#statusChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;homeFilter=b.dataset.filter;$$('#statusChips .chip').forEach(x=>x.classList.toggle('active',x===b));renderBooks();});
+
+const filters=['Fantasy','Romance','Mystery','Adventure','Contemporary','Historical','5 Stars','Favorites','Cozy','Exciting','Sad','Scary'];
+$('#exploreFilters').innerHTML=filters.map(f=>`<button class="filter" data-f="${f}">${f}</button>`).join('');
+$('#exploreFilters').addEventListener('click',e=>{const b=e.target.closest('.filter');if(!b)return; exploreFilter=b.dataset.f;renderExplore();});
+$('#clearExplore').onclick=()=>{exploreFilter='';$('#searchInput').value='';renderExplore();};
+$('#searchInput').addEventListener('input',renderExplore);
+function renderExplore(){const q=$('#searchInput').value.toLowerCase().trim();let list=books.filter(b=>{const txt=[b.title,b.author,b.genre,b.mood].join(' ').toLowerCase();if(q&&!txt.includes(q))return false;if(!exploreFilter)return true;if(exploreFilter==='5 Stars')return b.rating===5;if(exploreFilter==='Favorites')return b.favorite;return b.genre===exploreFilter||b.mood===exploreFilter;});$('#exploreGrid').innerHTML=list.map(bookCard).join('')||'<div class="empty" style="grid-column:1/-1">No matching books yet.</div>';}
+
+$('#photoBtn').onclick=()=>$('#photoInput').click();
+$('#photoInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{currentCover=r.result;$('#photoBox').innerHTML=`<img src="${currentCover}">`;};r.readAsDataURL(f);});
+
+function buildRating(){const el=$('#ratingInput');el.innerHTML='';for(let i=1;i<=5;i++){const b=document.createElement('button');b.type='button';b.textContent='★';b.className=i<=currentRating?'on':'';b.onclick=()=>{currentRating=i;buildRating()};el.appendChild(b)}}buildRating();
+$('#statusSeg').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;currentStatus=b.dataset.status;$$('#statusSeg button').forEach(x=>x.classList.toggle('active',x===b));});
+
+function resetForm(){editingId=null;currentRating=0;currentStatus='want';currentCover='';$('#addHeading').textContent='Add a book';$('#photoBox').innerHTML='<div class="photo-placeholder"><b>Take a photo of the cover ✨</b>We’ll try to find the title and author for you.</div>';['titleInput','authorInput','summaryInput','thoughtsInput','dateInput'].forEach(id=>$('#'+id).value='');$('#genreInput').value='Fantasy';$('#moodInput').value='Cozy';$('#favoriteInput').checked=false;$$('#statusSeg button').forEach(x=>x.classList.toggle('active',x.dataset.status==='want'));buildRating();}
+function editBook(id){const b=books.find(x=>x.id===id);if(!b)return;editingId=id;currentRating=b.rating||0;currentStatus=b.status||'want';currentCover=b.cover||'';$('#addHeading').textContent='Edit book';$('#titleInput').value=b.title||'';$('#authorInput').value=b.author||'';$('#genreInput').value=b.genre||'Fantasy';$('#moodInput').value=b.mood||'Cozy';$('#favoriteInput').checked=!!b.favorite;$('#dateInput').value=b.finishedDate||'';$('#summaryInput').value=b.summary||'';$('#thoughtsInput').value=b.thoughts||'';$('#photoBox').innerHTML=currentCover?`<img src="${currentCover}">`:'<div class="photo-placeholder"><b>Add a cover ✨</b></div>';$$('#statusSeg button').forEach(x=>x.classList.toggle('active',x.dataset.status===currentStatus));buildRating();showScreen('add');}
+$('#saveBtn').onclick=()=>{const title=$('#titleInput').value.trim();if(!title){alert('Please add a title.');return;}const data={id:editingId||crypto.randomUUID(),title,author:$('#authorInput').value.trim(),status:currentStatus,genre:$('#genreInput').value,mood:$('#moodInput').value,rating:currentRating,favorite:$('#favoriteInput').checked,finishedDate:$('#dateInput').value,summary:$('#summaryInput').value.trim(),thoughts:$('#thoughtsInput').value.trim(),cover:currentCover,createdAt:new Date().toISOString()}; if(editingId){const i=books.findIndex(x=>x.id===editingId);data.createdAt=books[i].createdAt;books[i]=data;}else books.unshift(data);save();resetForm();showScreen('books');};
+
+function openDetail(id){const b=books.find(x=>x.id===id);if(!b)return;const statusLabel={want:'Want to read',reading:'Reading',read:'Read'}[b.status]||'';$('#detailContent').innerHTML=`<div class="detail-head"><div class="detail-cover">${b.cover?`<img src="${b.cover}">`:'<div style="display:grid;place-items:center;height:100%">📖</div>'}</div><div><h2 style="font-size:30px">${esc(b.title)}</h2><div class="muted" style="margin-top:5px">${esc(b.author||'Unknown author')}</div><div class="stars" style="font-size:24px;margin:10px 0">${b.rating?stars(b.rating):'☆☆☆☆☆'}</div>${b.favorite?'<span class="pill">♥ Favorite</span>':''}<span class="pill">${esc(statusLabel)}</span></div></div><div class="form-card"><div><b>Genre</b><span class="pill">${esc(b.genre)}</span></div><div style="margin-top:12px"><b>Mood</b><span class="pill">${esc(b.mood)}</span></div>${b.finishedDate?`<div style="margin-top:12px"><b>Date finished</b><div class="muted">${esc(b.finishedDate)}</div></div>`:''}<div style="margin-top:16px"><b>What it’s about</b><p>${esc(b.summary||'No summary yet.')}</p></div><div style="margin-top:16px"><b>What I thought</b><p>${esc(b.thoughts||'No thoughts yet.')}</p></div><div class="detail-actions"><button class="edit" onclick="editBook('${b.id}')">Edit</button><button class="danger" onclick="deleteBook('${b.id}')">Delete</button></div></div>`;showScreen('detail');}
+function deleteBook(id){if(confirm('Delete this book?')){books=books.filter(b=>b.id!==id);save();showScreen('books')}}
+
+function renderStats(){const year=new Date().getFullYear();const read=books.filter(b=>b.status==='read');const readYear=read.filter(b=>b.finishedDate&&new Date(b.finishedDate).getFullYear()===year);$('#statRead').textContent=readYear.length;const rated=books.filter(b=>b.rating>0);$('#statAvg').textContent=rated.length?(rated.reduce((a,b)=>a+b.rating,0)/rated.length).toFixed(1):'–';const counts={};read.forEach(b=>counts[b.genre]=(counts[b.genre]||0)+1);const top=Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];$('#statGenre').textContent=top?top[0]:'–';$('#statFive').textContent=books.filter(b=>b.rating===5).length;$('#topGrid').innerHTML=[...books].filter(b=>b.rating).sort((a,b)=>b.rating-a.rating).slice(0,6).map(bookCard).join('')||'<div class="empty" style="grid-column:1/-1">Rate some books to see your favorites here.</div>';}
+function renderAll(){renderBooks();renderExplore();renderStats();}
+
+$('#ocrBtn').onclick=async()=>{
+  if(!currentCover){alert('Add a cover photo first.');return;}
+  const btn=$('#ocrBtn'); const old=btn.textContent; btn.textContent='Reading cover…'; btn.disabled=true;
+  try{
+    if(!window.Tesseract){await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');}
+    const {data:{text}}=await Tesseract.recognize(currentCover,'eng');
+    const lines=text.split(/\n+/).map(x=>x.trim()).filter(x=>x.length>2&&x.length<80);
+    if(lines.length){ if(!$('#titleInput').value) $('#titleInput').value=titleCase(lines[0]); if(!$('#authorInput').value&&lines[1]) $('#authorInput').value=titleCase(lines[1]); alert('I found some text. Please check title and author before saving.'); } else alert('I could not read the cover clearly. You can type the details manually.');
+  }catch(e){alert('Auto-reading was unavailable. You can still enter the title and author manually.');}
+  finally{btn.textContent=old;btn.disabled=false;}
+};
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+function titleCase(s){return s.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase());}
+
+if(!books.length){
+  books=[{id:crypto.randomUUID(),title:'The Hobbit',author:'J.R.R. Tolkien',status:'read',genre:'Fantasy',mood:'Adventurous',rating:5,favorite:true,finishedDate:new Date().toISOString().slice(0,10),summary:'Bilbo Baggins is swept into an unexpected adventure with a group of dwarves.',thoughts:'Cozy, exciting and full of adventure.',cover:'',createdAt:new Date().toISOString()}];
+  localStorage.setItem(KEY,JSON.stringify(books));
+}
+renderAll();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
