@@ -48,6 +48,10 @@
     .row{display:flex;gap:10px}.row>*{flex:1}.back{border:0;background:none;font-size:28px;color:var(--ink);padding:0 8px 0 0}.detail-head{display:grid;grid-template-columns:120px 1fr;gap:18px;align-items:start;margin-top:18px}.detail-cover{aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:#eadfd7;box-shadow:var(--shadow)}.detail-cover img{width:100%;height:100%;object-fit:cover}.muted{color:var(--muted)}
     .rating-input{display:flex;gap:7px;font-size:32px}.rating-input button{border:0;background:none;padding:0;color:#d9c2c7}.rating-input button.on{color:#b35d7b}
     .pill{display:inline-block;background:#f3dce2;color:#9c4b67;border-radius:999px;padding:8px 12px;font-size:12px;margin:4px 6px 0 0}.detail-actions{display:flex;gap:10px;margin-top:18px}.detail-actions button{flex:1;border:0;border-radius:14px;padding:12px}.danger{background:#f4e6e2;color:#a04e4e}.edit{background:#eadce3;color:#8e4862}
+    .explore-intro{background:linear-gradient(135deg,#fff8f2,#f3e4ea);border:1px solid var(--line);border-radius:22px;padding:16px;margin:12px 0 16px;box-shadow:var(--shadow)}
+    .explore-intro strong{font-family:Georgia,serif;font-size:19px;font-weight:500}.explore-intro p{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.45}
+    .recommend-list{display:grid;gap:12px;margin-top:12px}.recommend-card{display:grid;grid-template-columns:88px 1fr;gap:14px;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:12px;box-shadow:var(--shadow)}
+    .recommend-cover{width:88px;aspect-ratio:2/3;border-radius:11px;overflow:hidden;background:#eadfd7;display:grid;place-items:center}.recommend-cover img{width:100%;height:100%;object-fit:cover}.recommend-title{font-family:Georgia,serif;font-size:19px;line-height:1.05;margin-right:4px}.recommend-author{font-size:12px;color:var(--muted);margin-top:4px}.recommend-meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.recommend-tag{font-size:10px;background:#f1e5df;padding:5px 8px;border-radius:999px;color:#6d5653}.recommend-desc{font-size:12px;color:#665452;line-height:1.4;margin:8px 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.recommend-action{border:0;border-radius:12px;background:#f1dce3;color:#934d65;font-weight:700;padding:9px 10px;width:100%}.recommend-action.added{background:#e4e5d2;color:#5f674b}.rank-badge{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:50%;background:var(--rose);color:white;font-weight:700;font-size:12px;margin-bottom:6px}.pager{display:flex;gap:10px;margin-top:16px}.pager button{flex:1;border-radius:14px;padding:13px;border:1px solid var(--rose2);background:#fff7f3;color:var(--rose);font-weight:700}.pager button.primary-pager{background:var(--rose);color:#fff;border-color:var(--rose)}.pager button:disabled{opacity:.35}.loading-card{padding:32px 18px;text-align:center;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:20px}.explore-note{font-size:11px;color:var(--muted);margin-top:10px;line-height:1.4}.personal-badge{display:inline-block;background:#eadce8;color:#7c557f;border-radius:999px;padding:6px 10px;font-size:11px;margin-top:8px}.internet-search-row{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}.internet-search-row .search{margin:0}.search-btn{border:0;background:var(--rose);color:white;border-radius:14px;padding:13px 15px;font-weight:700}
     .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.mini-stat{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}.mini-stat .n{font-family:Georgia,serif;font-size:34px;margin-top:8px}
     .empty{padding:36px 14px;text-align:center;color:var(--muted)}
     .hidden{display:none!important}
@@ -68,12 +72,15 @@
     </section>
 
     <section id="explore" class="screen">
-      <div class="hero"><div><h2>Explore</h2></div><div class="sparkle">✦</div></div>
-      <input id="searchInput" class="search" placeholder="Search books, authors, genres..." />
-      <div class="section-title"><h3>Browse by</h3></div>
+      <div class="hero"><div><h2>Explore</h2><div class="tagline">Find your next favorite book ✨</div></div><div class="sparkle">✦</div></div>
+      <div class="explore-intro"><strong>Recommendations just for you</strong><p>Explore searches online for Danish books suited to ages 12–14, then gives a little extra weight to genres and authors you have rated highly.</p><span id="personalProfile" class="personal-badge">Learning from your library</span></div>
+      <div class="internet-search-row"><input id="searchInput" class="search" placeholder="Search the internet for a book or author..." /><button id="internetSearchBtn" class="search-btn">Search</button></div>
+      <div class="section-title"><h3>Choose a genre</h3><a id="clearExplore">For you</a></div>
       <div class="filter-grid" id="exploreFilters"></div>
-      <div class="section-title"><h3>Results</h3><a id="clearExplore">Clear</a></div>
-      <div id="exploreGrid" class="grid"></div>
+      <div class="section-title"><div><h3 id="recommendHeading">Top 10 for you</h3><div id="recommendSub" class="small" style="margin-top:4px">Danish books · ages 12–14</div></div></div>
+      <div id="exploreGrid" class="recommend-list"></div>
+      <div id="explorePager" class="pager hidden"><button id="prev10Btn">← Previous 10</button><button id="next10Btn" class="primary-pager">Next 10 →</button></div>
+      <div class="explore-note">Recommendations come from online book metadata and your own library. Availability, age suitability and Danish editions can vary, so book details should be checked before purchase.</div>
     </section>
 
     <section id="add" class="screen">
@@ -130,6 +137,7 @@ const KEY='bookish-books-v1';
 let books=JSON.parse(localStorage.getItem(KEY)||'[]');
 let editingId=null, currentRating=0, currentStatus='want', currentCover='';
 let homeFilter='all', exploreFilter='';
+let onlineRecommendations=[], explorePage=0, exploreLoading=false, lastExploreQuery='';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 function save(){localStorage.setItem(KEY,JSON.stringify(books)); renderAll();}
@@ -143,12 +151,93 @@ function bookCard(b){return `<button class="book-card" onclick="openDetail('${b.
 function renderBooks(){const list=filteredHome();$('#bookGrid').innerHTML=list.map(bookCard).join('');$('#emptyBooks').classList.toggle('hidden',list.length>0); const year=new Date().getFullYear(); $('#booksReadCount').textContent=books.filter(b=>b.status==='read'&&b.finishedDate&&new Date(b.finishedDate).getFullYear()===year).length;}
 $('#statusChips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;homeFilter=b.dataset.filter;$$('#statusChips .chip').forEach(x=>x.classList.toggle('active',x===b));renderBooks();});
 
-const filters=['Fantasy','Romance','Mystery','Adventure','Contemporary','Historical','5 Stars','Favorites','Cozy','Exciting','Sad','Scary'];
+const filters=['Fantasy','Romance','Mystery','Adventure','Contemporary','Historical','Science fiction','Funny'];
 $('#exploreFilters').innerHTML=filters.map(f=>`<button class="filter" data-f="${f}">${f}</button>`).join('');
-$('#exploreFilters').addEventListener('click',e=>{const b=e.target.closest('.filter');if(!b)return; exploreFilter=b.dataset.f;renderExplore();});
-$('#clearExplore').onclick=()=>{exploreFilter='';$('#searchInput').value='';renderExplore();};
-$('#searchInput').addEventListener('input',renderExplore);
-function renderExplore(){const q=$('#searchInput').value.toLowerCase().trim();let list=books.filter(b=>{const txt=[b.title,b.author,b.genre,b.mood].join(' ').toLowerCase();if(q&&!txt.includes(q))return false;if(!exploreFilter)return true;if(exploreFilter==='5 Stars')return b.rating===5;if(exploreFilter==='Favorites')return b.favorite;return b.genre===exploreFilter||b.mood===exploreFilter;});$('#exploreGrid').innerHTML=list.map(bookCard).join('')||'<div class="empty" style="grid-column:1/-1">No matching books yet.</div>';}
+$('#exploreFilters').addEventListener('click',e=>{const b=e.target.closest('.filter');if(!b)return; exploreFilter=b.dataset.f; explorePage=0; $$('#exploreFilters .filter').forEach(x=>x.style.outline=x===b?'2px solid #b35d7b':'none'); fetchRecommendations();});
+$('#clearExplore').onclick=()=>{exploreFilter='';explorePage=0;$('#searchInput').value='';$$('#exploreFilters .filter').forEach(x=>x.style.outline='none');fetchRecommendations();};
+$('#internetSearchBtn').onclick=()=>{explorePage=0;fetchRecommendations($('#searchInput').value.trim());};
+$('#searchInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();explorePage=0;fetchRecommendations($('#searchInput').value.trim());}});
+$('#prev10Btn').onclick=()=>{if(explorePage>0){explorePage--;renderOnlineRecommendations();window.scrollTo({top:300,behavior:'smooth'});}};
+$('#next10Btn').onclick=()=>{if((explorePage+1)*10<onlineRecommendations.length){explorePage++;renderOnlineRecommendations();window.scrollTo({top:300,behavior:'smooth'});}};
+
+const genreSearch={
+  'Fantasy':'fantasy','Romance':'romance','Mystery':'mystery','Adventure':'adventure',
+  'Contemporary':'young adult','Historical':'historical fiction','Science fiction':'science fiction','Funny':'humor'
+};
+function normalizeText(s=''){return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9æøå ]/g,' ');}
+function libraryProfile(){
+  const genreScores={}, authorScores={}; let rated=0;
+  books.forEach(b=>{
+    const weight=(b.rating||0)+(b.favorite?2:0)+(b.status==='read'?0.5:0);
+    if(weight>0){rated++; genreScores[b.genre]=(genreScores[b.genre]||0)+weight; if(b.author) authorScores[normalizeText(b.author)]=(authorScores[normalizeText(b.author)]||0)+weight;}
+  });
+  const topGenre=Object.entries(genreScores).sort((a,b)=>b[1]-a[1])[0]?.[0]||'Fantasy';
+  const topAuthor=Object.entries(authorScores).sort((a,b)=>b[1]-a[1])[0]?.[0]||'';
+  return {genreScores,authorScores,topGenre,topAuthor,rated};
+}
+function updateProfileBadge(){const p=libraryProfile();$('#personalProfile').textContent=p.rated?`Learning from ${p.rated} rated/favorite book${p.rated===1?'':'s'} · loves ${p.topGenre}`:'Start rating books and Explore will learn your taste';}
+function alreadyInLibrary(v){const t=normalizeText(v.title),a=normalizeText(v.author);return books.some(b=>normalizeText(b.title)===t && (!a||normalizeText(b.author)===a));}
+function scoreVolume(v,profile,chosenGenre){
+  let score=0;
+  const cats=(v.categories||[]).join(' ').toLowerCase(), desc=(v.description||'').toLowerCase(), title=(v.title||'').toLowerCase();
+  const genre=(chosenGenre||profile.topGenre||'Fantasy'); const gs=(genreSearch[genre]||genre).toLowerCase();
+  if(cats.includes(gs)||desc.includes(gs)||title.includes(gs)) score+=7;
+  if((v.language||'').toLowerCase()==='da') score+=10;
+  if(v.averageRating) score+=Math.min(8,v.averageRating*1.4);
+  if(v.ratingsCount) score+=Math.min(5,Math.log10(v.ratingsCount+1)*1.6);
+  if(v.publishedDate){const y=parseInt(v.publishedDate);if(y>=2015)score+=2;if(y>=2020)score+=1;}
+  if(v.categories?.some(c=>/juvenile|young adult|ungdom|børn|children/i.test(c))) score+=5;
+  if(/young adult|teen|ungdom|12|13|14|middle grade/i.test(desc)) score+=3;
+  for(const [g,w] of Object.entries(profile.genreScores)){if(cats.toLowerCase().includes(g.toLowerCase())||desc.includes(g.toLowerCase())) score+=Math.min(4,w/3);}
+  const an=normalizeText(v.author); if(an&&profile.authorScores[an]) score+=Math.min(5,profile.authorScores[an]/2);
+  if(alreadyInLibrary(v)) score-=50;
+  return score;
+}
+async function fetchRecommendations(customQuery=''){
+  if(exploreLoading)return; exploreLoading=true; lastExploreQuery=customQuery;
+  $('#exploreGrid').innerHTML='<div class="loading-card">Searching for lovely books… ✨<br><span class="small">Looking for Danish editions for ages 12–14</span></div>';
+  $('#explorePager').classList.add('hidden'); updateProfileBadge();
+  const p=libraryProfile(); const genre=exploreFilter||p.topGenre||'Fantasy';
+  $('#recommendHeading').textContent=customQuery?`Top results for “${customQuery}”`:`Top 10 · ${genre}`;
+  $('#recommendSub').textContent='Danish books · ages 12–14 · personalized to your library';
+  try{
+    const base=customQuery || genreSearch[genre] || genre;
+    // Google Books has broad Danish metadata. We ask for Danish-language volumes and retrieve enough results to rank locally.
+    const q=customQuery?base:`${base} ungdom`;
+    const url=`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&langRestrict=da&printType=books&maxResults=40&orderBy=relevance`;
+    const res=await fetch(url); if(!res.ok)throw new Error('Book search unavailable');
+    const data=await res.json();
+    let items=(data.items||[]).map(item=>{
+      const i=item.volumeInfo||{}; return {gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};
+    });
+    // If Danish-only search is too narrow, broaden but strongly prefer Danish in ranking.
+    if(items.length<20){
+      const r2=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&printType=books&maxResults=40&orderBy=relevance`);
+      if(r2.ok){const d2=await r2.json(); const more=(d2.items||[]).map(item=>{const i=item.volumeInfo||{};return {gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};}); const seen=new Set(items.map(x=>x.gid));more.forEach(x=>{if(!seen.has(x.gid)){items.push(x);seen.add(x.gid);}});}
+    }
+    onlineRecommendations=items.map(v=>({...v,personalScore:scoreVolume(v,p,exploreFilter||p.topGenre)})).sort((a,b)=>b.personalScore-a.personalScore).slice(0,40);
+    explorePage=0;renderOnlineRecommendations();
+  }catch(err){
+    $('#exploreGrid').innerHTML='<div class="loading-card"><b>I couldn’t reach the online book search.</b><br><span class="small">Check the internet connection and try again.</span><br><button class="secondary" style="margin-top:14px" onclick="fetchRecommendations(lastExploreQuery)">Try again</button></div>';
+  }finally{exploreLoading=false;}
+}
+function recommendationCard(v,index){
+  const added=alreadyInLibrary(v); const rank=explorePage*10+index+1; const rating=v.averageRating?`★ ${Number(v.averageRating).toFixed(1)}`:''; const year=v.publishedDate?String(v.publishedDate).slice(0,4):'';
+  return `<article class="recommend-card"><div><div class="rank-badge">${rank}</div><div class="recommend-cover">${v.cover?`<img src="${esc(v.cover)}" alt="">`:'📖'}</div></div><div><div class="recommend-title">${esc(v.title)}</div><div class="recommend-author">${esc(v.author||'Unknown author')}</div><div class="recommend-meta">${v.language==='da'?'<span class="recommend-tag">Danish</span>':''}${year?`<span class="recommend-tag">${esc(year)}</span>`:''}${rating?`<span class="recommend-tag">${esc(rating)}</span>`:''}</div><div class="recommend-desc">${esc(v.description||'No description available yet.')}</div><button class="recommend-action ${added?'added':''}" ${added?'disabled':''} onclick="addRecommendation('${v.gid}')">${added?'✓ In your library':'♡ Add to Want to Read'}</button></div></article>`;
+}
+function renderOnlineRecommendations(){
+  const start=explorePage*10, page=onlineRecommendations.slice(start,start+10);
+  $('#exploreGrid').innerHTML=page.length?page.map(recommendationCard).join(''):'<div class="loading-card">No matching books found. Try another genre or search.</div>';
+  const pager=$('#explorePager'); pager.classList.toggle('hidden',onlineRecommendations.length<=10); $('#prev10Btn').disabled=explorePage===0; $('#next10Btn').disabled=start+10>=onlineRecommendations.length;
+  if(!lastExploreQuery){const g=exploreFilter||libraryProfile().topGenre||'Fantasy';$('#recommendHeading').textContent=`Top ${start+1}–${Math.min(start+10,onlineRecommendations.length)} · ${g}`;}
+}
+function guessGenreFromOnline(v){const text=(v.categories||[]).join(' ').toLowerCase();for(const g of Object.keys(genreSearch)){if(text.includes((genreSearch[g]||g).toLowerCase()))return g;}return exploreFilter||libraryProfile().topGenre||'Other';}
+function addRecommendation(gid){
+  const v=onlineRecommendations.find(x=>x.gid===gid);if(!v||alreadyInLibrary(v))return;
+  books.unshift({id:crypto.randomUUID(),title:v.title,author:v.author,status:'want',genre:guessGenreFromOnline(v),mood:'Cozy',rating:0,favorite:false,finishedDate:'',summary:v.description||'',thoughts:'',cover:v.cover||'',createdAt:new Date().toISOString(),source:'Google Books',sourceId:v.gid});
+  save();renderOnlineRecommendations();
+}
+function renderExplore(){updateProfileBadge(); if(!onlineRecommendations.length&&!exploreLoading) fetchRecommendations(); else renderOnlineRecommendations();}
 
 $('#photoBtn').onclick=()=>$('#photoInput').click();
 $('#photoInput').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{currentCover=r.result;$('#photoBox').innerHTML=`<img src="${currentCover}">`;};r.readAsDataURL(f);});
