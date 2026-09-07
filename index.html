@@ -193,6 +193,32 @@ function scoreVolume(v,profile,chosenGenre){
   if(alreadyInLibrary(v)) score-=50;
   return score;
 }
+
+function googleBooksJsonp(url){
+  return new Promise((resolve,reject)=>{
+    const cb='gb_'+Date.now()+'_'+Math.random().toString(36).slice(2);
+    const script=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{try{delete window[cb]}catch(e){window[cb]=undefined} script.remove();};
+    const timer=setTimeout(()=>{if(done)return;done=true;cleanup();reject(new Error('Book search timed out'));},12000);
+    window[cb]=(data)=>{if(done)return;done=true;clearTimeout(timer);cleanup();resolve(data||{});};
+    script.onerror=()=>{if(done)return;done=true;clearTimeout(timer);cleanup();reject(new Error('Book search unavailable'));};
+    script.src=url+(url.includes('?')?'&':'?')+'callback='+encodeURIComponent(cb);
+    document.head.appendChild(script);
+  });
+}
+async function getGoogleBooks(url){
+  try{
+    const res=await fetch(url,{mode:'cors',cache:'no-store'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    return await res.json();
+  }catch(fetchErr){
+    // GitHub Pages/iOS can occasionally reject the direct cross-origin request.
+    // Google Books also supports JSONP, so use that as a browser-safe fallback.
+    return await googleBooksJsonp(url);
+  }
+}
+
 async function fetchRecommendations(customQuery=''){
   if(exploreLoading)return; exploreLoading=true; lastExploreQuery=customQuery;
   $('#exploreGrid').innerHTML='<div class="loading-card">Searching for lovely books… ✨<br><span class="small">Looking for Danish editions for ages 12–14</span></div>';
@@ -205,20 +231,19 @@ async function fetchRecommendations(customQuery=''){
     // Google Books has broad Danish metadata. We ask for Danish-language volumes and retrieve enough results to rank locally.
     const q=customQuery?base:`${base} ungdom`;
     const url=`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&langRestrict=da&printType=books&maxResults=40&orderBy=relevance`;
-    const res=await fetch(url); if(!res.ok)throw new Error('Book search unavailable');
-    const data=await res.json();
+    const data=await getGoogleBooks(url);
     let items=(data.items||[]).map(item=>{
       const i=item.volumeInfo||{}; return {gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};
     });
     // If Danish-only search is too narrow, broaden but strongly prefer Danish in ranking.
     if(items.length<20){
-      const r2=await fetch(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&printType=books&maxResults=40&orderBy=relevance`);
-      if(r2.ok){const d2=await r2.json(); const more=(d2.items||[]).map(item=>{const i=item.volumeInfo||{};return {gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};}); const seen=new Set(items.map(x=>x.gid));more.forEach(x=>{if(!seen.has(x.gid)){items.push(x);seen.add(x.gid);}});}
+      const d2=await getGoogleBooks(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&printType=books&maxResults=40&orderBy=relevance`);
+      if(d2){ const more=(d2.items||[]).map(item=>{const i=item.volumeInfo||{};return {gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};}); const seen=new Set(items.map(x=>x.gid));more.forEach(x=>{if(!seen.has(x.gid)){items.push(x);seen.add(x.gid);}});}
     }
     onlineRecommendations=items.map(v=>({...v,personalScore:scoreVolume(v,p,exploreFilter||p.topGenre)})).sort((a,b)=>b.personalScore-a.personalScore).slice(0,40);
     explorePage=0;renderOnlineRecommendations();
   }catch(err){
-    $('#exploreGrid').innerHTML='<div class="loading-card"><b>I couldn’t reach the online book search.</b><br><span class="small">Check the internet connection and try again.</span><br><button class="secondary" style="margin-top:14px" onclick="fetchRecommendations(lastExploreQuery)">Try again</button></div>';
+    $('#exploreGrid').innerHTML='<div class="loading-card"><b>I couldn’t reach the online book search.</b><br><span class="small">The book service did not answer. Try again in a moment.</span><br><button class="secondary" style="margin-top:14px" onclick="fetchRecommendations(lastExploreQuery)">Try again</button></div>';
   }finally{exploreLoading=false;}
 }
 function recommendationCard(v,index){

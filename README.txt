@@ -17,3 +17,5 @@ Important
 
 GitHub update
 Replace index.html, sw.js, manifest.webmanifest and README.txt in the repository root with these V2 files. GitHub Pages will redeploy automatically.
+
+V2.1: Added a JSONP fallback for Google Books search on iPhone/GitHub Pages.
