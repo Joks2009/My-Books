@@ -164,6 +164,10 @@ const genreSearch={
   'Fantasy':'fantasy','Romance':'romance','Mystery':'mystery','Adventure':'adventure',
   'Contemporary':'young adult','Historical':'historical fiction','Science fiction':'science fiction','Funny':'humor'
 };
+const genreSearchDa={
+  'Fantasy':'fantasy','Romance':'romantik','Mystery':'mysterie','Adventure':'eventyr',
+  'Contemporary':'ungdomsroman','Historical':'historisk roman','Science fiction':'science fiction','Funny':'humor'
+};
 function normalizeText(s=''){return String(s).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9æøå ]/g,' ');}
 function libraryProfile(){
   const genreScores={}, authorScores={}; let rated=0;
@@ -227,20 +231,49 @@ async function fetchRecommendations(customQuery=''){
   $('#recommendHeading').textContent=customQuery?`Top results for “${customQuery}”`:`Top 10 · ${genre}`;
   $('#recommendSub').textContent='Danish books · ages 12–14 · personalized to your library';
   try{
-    const base=customQuery || genreSearch[genre] || genre;
-    // Google Books has broad Danish metadata. We ask for Danish-language volumes and retrieve enough results to rank locally.
-    const q=customQuery?base:`${base} ungdom`;
-    const url=`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&langRestrict=da&printType=books&maxResults=40&orderBy=relevance`;
-    const data=await getGoogleBooks(url);
-    let items=(data.items||[]).map(item=>{
-      const i=item.volumeInfo||{}; return {gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};
-    });
-    // If Danish-only search is too narrow, broaden but strongly prefer Danish in ranking.
-    if(items.length<20){
-      const d2=await getGoogleBooks(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&printType=books&maxResults=40&orderBy=relevance`);
-      if(d2){ const more=(d2.items||[]).map(item=>{const i=item.volumeInfo||{};return {gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};}); const seen=new Set(items.map(x=>x.gid));more.forEach(x=>{if(!seen.has(x.gid)){items.push(x);seen.add(x.gid);}});}
+    const en=genreSearch[genre]||genre;
+    const da=genreSearchDa[genre]||genre;
+    const searches=customQuery
+      ? [
+          {q:customQuery, daOnly:true},
+          {q:customQuery, daOnly:false}
+        ]
+      : [
+          {q:da, daOnly:true},
+          {q:`${da} unge`, daOnly:true},
+          {q:`${da} ungdom`, daOnly:true},
+          {q:`subject:${en}`, daOnly:true},
+          {q:`${en} young adult`, daOnly:false},
+          {q:en, daOnly:false}
+        ];
+
+    const seen=new Set(); let items=[];
+    const addItems=(data)=>{
+      (data?.items||[]).forEach(item=>{
+        const i=item.volumeInfo||{};
+        const v={gid:item.id,title:i.title||'Untitled',author:(i.authors||[]).join(', '),description:i.description||'',categories:i.categories||[],language:i.language||'',publishedDate:i.publishedDate||'',averageRating:i.averageRating||0,ratingsCount:i.ratingsCount||0,cover:(i.imageLinks?.thumbnail||i.imageLinks?.smallThumbnail||'').replace('http:','https:'),infoLink:i.infoLink||''};
+        const key=item.id||`${normalizeText(v.title)}|${normalizeText(v.author)}`;
+        if(!seen.has(key)){seen.add(key);items.push(v);}
+      });
+    };
+
+    // Run several broader searches instead of relying on one very restrictive query.
+    for(const s of searches){
+      if(items.length>=55) break;
+      const params=new URLSearchParams({q:s.q,printType:'books',maxResults:'40',orderBy:'relevance'});
+      if(s.daOnly) params.set('langRestrict','da');
+      try{ addItems(await getGoogleBooks(`https://www.googleapis.com/books/v1/volumes?${params.toString()}`)); }catch(e){}
     }
-    onlineRecommendations=items.map(v=>({...v,personalScore:scoreVolume(v,p,exploreFilter||p.topGenre)})).sort((a,b)=>b.personalScore-a.personalScore).slice(0,40);
+
+    // Prefer actual Danish metadata, but don't show an empty screen just because Google omitted language metadata.
+    const danish=items.filter(v=>(v.language||'').toLowerCase()==='da');
+    const unknownOrOther=items.filter(v=>(v.language||'').toLowerCase()!=='da');
+    const pool=danish.length>=10 ? danish : [...danish,...unknownOrOther];
+    onlineRecommendations=pool
+      .map(v=>({...v,personalScore:scoreVolume(v,p,exploreFilter||p.topGenre)}))
+      .sort((a,b)=>b.personalScore-a.personalScore)
+      .slice(0,40);
+
     explorePage=0;renderOnlineRecommendations();
   }catch(err){
     $('#exploreGrid').innerHTML='<div class="loading-card"><b>I couldn’t reach the online book search.</b><br><span class="small">The book service did not answer. Try again in a moment.</span><br><button class="secondary" style="margin-top:14px" onclick="fetchRecommendations(lastExploreQuery)">Try again</button></div>';
